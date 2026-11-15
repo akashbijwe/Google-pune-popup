@@ -2,6 +2,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import QRCode from 'qrcode';
 import { CAFE_NAME, CURRENCY } from '@/lib/brand';
+import { haptic, ripple } from '@/lib/fx';
+import { CupMark, PhotoBg } from '../components/Brand';
 
 const api = (url, opts) => fetch(url, opts);
 const json = (method, body) => ({ method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
@@ -12,23 +14,35 @@ function Login({ onDone }) {
   const [u, setU] = useState('');
   const [p, setP] = useState('');
   const [err, setErr] = useState('');
+  const [shake, setShake] = useState(0);
+  const [busy, setBusy] = useState(false);
   async function submit(e) {
     e.preventDefault();
+    setBusy(true);
     const r = await api('/api/auth', json('POST', { username: u, password: p }));
-    if (r.ok) onDone(); else setErr('Invalid username or password');
+    setBusy(false);
+    if (r.ok) { haptic('success'); onDone(); }
+    else { haptic('error'); setShake((n) => n + 1); setErr('Enter a username and password.'); }
   }
+  const inp = 'w-full border-2 border-latte/50 bg-white rounded-xl px-4 py-3 mb-3 outline-none focus:border-caramel transition';
   return (
-    <main className="min-h-screen flex items-center justify-center px-6 bg-cream">
-      <form onSubmit={submit} className="w-full max-w-sm bg-white rounded-2xl shadow-lg border border-latte/30 p-8">
-        <div className="text-3xl">☕</div>
-        <h1 className="font-display text-2xl mt-2">{CAFE_NAME}</h1>
-        <p className="text-sm text-roast/70 mb-6">Staff panel</p>
-        <input className="w-full border border-latte/50 rounded-lg px-3 py-2 mb-3 outline-none focus:border-roast" placeholder="Username" value={u} onChange={(e) => setU(e.target.value)} />
-        <input type="password" className="w-full border border-latte/50 rounded-lg px-3 py-2 mb-3 outline-none focus:border-roast" placeholder="Password" value={p} onChange={(e) => setP(e.target.value)} />
-        {err && <p className="text-red-700 text-sm mb-3">{err}</p>}
-        <button className="w-full bg-espresso text-foam rounded-lg py-2.5 font-medium">Sign in</button>
-      </form>
-    </main>
+    <>
+      <PhotoBg src="/img/tw-5.jpg" />
+      <main className="min-h-screen flex items-center justify-center px-5">
+        <form key={shake} onSubmit={submit} className={`w-full max-w-sm bg-foam rounded-3xl shadow-2xl p-8 pop ${shake ? 'shake' : ''}`}>
+          <CupMark className="w-10 h-10 text-caramel" />
+          <h1 className="font-display font-bold text-3xl mt-2">{CAFE_NAME}</h1>
+          <p className="text-sm text-roast/70 mb-5">Staff panel</p>
+          <input className={inp} placeholder="Username" autoComplete="username" value={u} onChange={(e) => setU(e.target.value)} />
+          <input type="password" className={inp} placeholder="Password" autoComplete="current-password" value={p} onChange={(e) => setP(e.target.value)} />
+          <p className="text-xs rounded-xl bg-caramel/10 text-roast px-3 py-2 mb-3">
+            <b>Demo mode:</b> any username and password will work.
+          </p>
+          {err && <p className="text-red-700 text-sm mb-3" role="alert">{err}</p>}
+          <button disabled={busy} onPointerDown={ripple} className="btn btn-primary w-full py-3.5">{busy ? 'Signing in…' : 'Sign in'}</button>
+        </form>
+      </main>
+    </>
   );
 }
 
@@ -59,11 +73,13 @@ function OrderCard({ o, onStatus }) {
         <div>
           <div className="text-xs text-roast/60">Order #{String(o.number).padStart(3, '0')}</div>
           <div className="text-2xl font-bold">Table {o.table}</div>
+          {o.phone && <a href={`tel:+91${String(o.phone).slice(-10)}`} className="text-xs text-roast/70 underline">+91 {String(o.phone).slice(-10)}</a>}
         </div>
         <div className="text-right">
           <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${isNew ? 'bg-caramel/15 text-caramel' : 'bg-sage/15 text-sage'}`}>
             {isNew ? 'NEW' : 'PREPARED'}
           </span>
+          {o.paid && <span className="ml-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-green-100 text-green-800">PAID</span>}
           <div className="text-xs text-roast/60 mt-1">{ago(o.createdAt)}</div>
         </div>
       </div>
@@ -81,9 +97,9 @@ function OrderCard({ o, onStatus }) {
       <div className="mt-3 flex items-center justify-between">
         <span className="font-semibold">{CURRENCY}{o.total}</span>
         {isNew ? (
-          <button onClick={() => onStatus(o.id, 'prepared')} className="bg-caramel text-white rounded-lg px-4 py-2 text-sm font-medium">Mark prepared</button>
+          <button onPointerDown={ripple} onClick={() => { haptic('select'); onStatus(o.id, 'prepared'); }} className="relative overflow-hidden active:scale-95 transition bg-caramel text-white rounded-lg px-4 py-2 text-sm font-medium">Mark prepared</button>
         ) : (
-          <button onClick={() => onStatus(o.id, 'served')} className="bg-sage text-white rounded-lg px-4 py-2 text-sm font-medium">Served to customer</button>
+          <button onPointerDown={ripple} onClick={() => { haptic('success'); onStatus(o.id, 'served'); }} className="relative overflow-hidden active:scale-95 transition bg-sage text-white rounded-lg px-4 py-2 text-sm font-medium">Served to customer</button>
         )}
       </div>
     </div>
@@ -215,33 +231,41 @@ function MenuManager() {
 function QRCodes() {
   const [count, setCount] = useState(10);
   const [qrs, setQrs] = useState([]);
+  const [gen, setGen] = useState(0);
   useEffect(() => {
+    let live = true;
     (async () => {
+      const r = await api(`/api/qr?count=${count}`, { cache: 'no-store' });
+      if (!r.ok || !live) return;
+      const list = await r.json();
       const out = [];
-      for (let t = 1; t <= count; t++) {
-        const url = `${window.location.origin}/menu?table=${t}`;
-        out.push({ t, url, img: await QRCode.toDataURL(url, { width: 360, margin: 1, color: { dark: '#2E1F17' } }) });
+      for (const { table, token } of list) {
+        const url = `${window.location.origin}/menu?table=${token}`;
+        out.push({ t: table, url, token, img: await QRCode.toDataURL(url, { width: 360, margin: 1, color: { dark: '#2E1F17' } }) });
       }
-      setQrs(out);
+      if (live) setQrs(out);
     })();
-  }, [count]);
+    return () => { live = false; };
+  }, [count, gen]);
   return (
     <div>
-      <div className="flex items-center gap-3 mb-6 print:hidden">
+      <div className="flex items-center gap-3 mb-6 print:hidden flex-wrap">
         <label className="text-sm">Number of tables
           <input type="number" min="1" max="100" value={count} onChange={(e) => setCount(Math.max(1, Math.min(100, +e.target.value || 1)))}
             className="ml-2 w-20 border border-latte/50 rounded-lg px-2 py-1.5" />
         </label>
-        <button onClick={() => window.print()} className="bg-espresso text-foam rounded-lg px-4 py-2 text-sm">Print QR codes</button>
-        <span className="text-xs text-roast/60">QR links use this site's address: {typeof window !== 'undefined' && window.location.origin}</span>
+        <button onPointerDown={ripple} onClick={() => { haptic('select'); setGen((g) => g + 1); }} className="btn border border-latte bg-foam px-4 py-2 text-sm">Regenerate codes</button>
+        <button onPointerDown={ripple} onClick={() => { haptic('tap'); window.print(); }} className="btn btn-dark px-4 py-2 text-sm">Print QR codes</button>
+        <span className="text-xs text-roast/60">Each QR holds an encrypted table code. Links use this site's address: {typeof window !== 'undefined' && window.location.origin}</span>
       </div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {qrs.map((q) => (
           <div key={q.t} className="bg-white rounded-2xl border border-latte/30 p-4 text-center break-inside-avoid">
-            <div className="font-display text-lg">{CAFE_NAME}</div>
+            <div className="font-display font-bold text-lg">{CAFE_NAME}</div>
             <img src={q.img} alt={`Table ${q.t}`} className="w-full" />
             <div className="font-bold text-xl">Table {q.t}</div>
             <div className="text-xs text-roast/60">Scan to order</div>
+            <div className="mt-1 text-[10px] text-roast/40 break-all print:hidden" title={q.url}>{q.token}</div>
           </div>
         ))}
       </div>
@@ -260,9 +284,10 @@ function History() {
       <div className="bg-white rounded-2xl border border-latte/30 divide-y divide-latte/20">
         {orders.map((o) => (
           <div key={o.id} className="p-3 text-sm flex flex-wrap gap-x-4 gap-y-1">
-            <b>#{String(o.number).padStart(3, '0')}</b><span>Table {o.table}</span>
+            <b>#{String(o.number).padStart(3, '0')}</b><span>Table {o.table}</span>{o.phone && <span className="text-roast/60">+91 {String(o.phone).slice(-10)}</span>}
             <span className="flex-1 text-roast/70">{o.items.map((i) => `${i.qty}× ${i.name}`).join(', ')}</span>
             <span className="font-semibold">{CURRENCY}{o.total}</span>
+            {o.paid && <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-green-100 text-green-800">PAID</span>}
             <span className="text-roast/50">{new Date(o.createdAt).toLocaleString()}</span>
           </div>
         ))}
@@ -282,20 +307,21 @@ export default function Admin() {
   if (authed === null) return null;
   if (!authed) return <Login onDone={() => setAuthed(true)} />;
   return (
-    <div className="min-h-screen bg-cream">
+    <div className="min-h-screen">
+      <PhotoBg src="/img/tw-9.jpg" light animate={false} />
       <header className="bg-espresso text-foam print:hidden">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center gap-4 flex-wrap">
-          <span className="font-display text-lg mr-4">☕ {CAFE_NAME} <span className="text-latte text-sm">· Staff</span></span>
+          <span className="flex items-center gap-2 font-display font-bold text-lg mr-4"><CupMark className="w-7 h-7 text-latte" />{CAFE_NAME} <span className="text-latte text-sm font-sans font-medium">· Staff</span></span>
           <nav className="flex gap-1 flex-1 overflow-x-auto">
             {TABS.map(([k, label]) => (
-              <button key={k} onClick={() => setTab(k)}
-                className={`px-3 py-1.5 rounded-lg text-sm whitespace-nowrap ${tab === k ? 'bg-foam text-espresso' : 'text-foam/80 hover:bg-foam/10'}`}>{label}</button>
+              <button key={k} onClick={() => { haptic('select'); setTab(k); }}
+                className={`px-3 py-1.5 rounded-lg text-sm whitespace-nowrap transition active:scale-95 ${tab === k ? 'bg-foam text-espresso' : 'text-foam/80 hover:bg-foam/10'}`}>{label}</button>
             ))}
           </nav>
           <button onClick={async () => { await api('/api/auth', { method: 'DELETE' }); setAuthed(false); }} className="text-sm text-foam/70 hover:text-foam">Sign out</button>
         </div>
       </header>
-      <main className="max-w-6xl mx-auto p-4 md:p-6">
+      <main key={tab} className="max-w-6xl mx-auto p-4 md:p-6 rise">
         {tab === 'orders' && <LiveOrders />}
         {tab === 'menu' && <MenuManager />}
         {tab === 'qr' && <QRCodes />}

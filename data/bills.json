@@ -1,0 +1,48 @@
+[
+  {
+    "id": "mwhyors1dseu",
+    "billNo": 1,
+    "table": "7",
+    "phone": "9564564578",
+    "orders": [
+      {
+        "number": 2,
+        "createdAt": 1794754812537,
+        "items": [
+          {
+            "itemId": "i5",
+            "name": "Flat White",
+            "type": "beverage",
+            "size": "M",
+            "qty": 1,
+            "unitPrice": 190,
+            "sugar": "Regular",
+            "milk": "Regular milk",
+            "extraShot": false,
+            "note": ""
+          },
+          {
+            "itemId": "i7",
+            "name": "Hot Chocolate",
+            "type": "beverage",
+            "size": "M",
+            "qty": 1,
+            "unitPrice": 180,
+            "sugar": "Regular",
+            "milk": "Regular milk",
+            "extraShot": false,
+            "note": ""
+          }
+        ]
+      }
+    ],
+    "subtotal": 370,
+    "cgst": 9.25,
+    "sgst": 9.25,
+    "rate": 2.5,
+    "total": 388.5,
+    "method": "card",
+    "ref": "Visa •••• 4242",
+    "paidAt": 1794754832545
+  }
+]

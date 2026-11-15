@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getMenu, getOrders, saveOrders } from '@/lib/db';
 import { isAuthed } from '@/lib/auth';
+import { decryptTable } from '@/lib/qr';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,9 +17,14 @@ export async function GET(req) {
 // customer: place order. Prices are recomputed server-side from the menu.
 export async function POST(req) {
   const body = await req.json();
-  const table = String(body.table || '').trim();
-  if (!table || !Array.isArray(body.items) || !body.items.length)
-    return NextResponse.json({ error: 'Table and items required' }, { status: 400 });
+  const table = decryptTable(body.token);
+  if (!table)
+    return NextResponse.json({ error: 'Invalid table code. Please scan your table QR again.' }, { status: 400 });
+  const phone = String(body.phone || '').replace(/\D/g, '');
+  if (phone.length < 10)
+    return NextResponse.json({ error: 'A valid phone number is required' }, { status: 400 });
+  if (!Array.isArray(body.items) || !body.items.length)
+    return NextResponse.json({ error: 'Your order is empty' }, { status: 400 });
 
   const menu = getMenu();
   const items = [];
@@ -48,7 +54,7 @@ export async function POST(req) {
   const number = orders.reduce((mx, o) => Math.max(mx, o.number), 0) + 1;
   const order = {
     id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
-    number, table, items,
+    number, table, phone, items,
     total: items.reduce((s, i) => s + i.unitPrice * i.qty, 0),
     status: 'new', createdAt: Date.now(),
   };

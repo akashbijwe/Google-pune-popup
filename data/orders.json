@@ -22,5 +22,43 @@
     "createdAt": 1794750659049,
     "preparedAt": 1794750677554,
     "servedAt": 1794750679337
+  },
+  {
+    "id": "mwhyocc9jp8d",
+    "number": 2,
+    "table": "7",
+    "phone": "9564564578",
+    "items": [
+      {
+        "itemId": "i5",
+        "name": "Flat White",
+        "type": "beverage",
+        "size": "M",
+        "qty": 1,
+        "unitPrice": 190,
+        "sugar": "Regular",
+        "milk": "Regular milk",
+        "extraShot": false,
+        "note": ""
+      },
+      {
+        "itemId": "i7",
+        "name": "Hot Chocolate",
+        "type": "beverage",
+        "size": "M",
+        "qty": 1,
+        "unitPrice": 180,
+        "sugar": "Regular",
+        "milk": "Regular milk",
+        "extraShot": false,
+        "note": ""
+      }
+    ],
+    "total": 370,
+    "status": "new",
+    "createdAt": 1794754812537,
+    "paid": true,
+    "paidAt": 1794754832545,
+    "billId": "mwhyors1dseu"
   }
 ]

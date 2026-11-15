@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { ADMIN_USER, ADMIN_PASS } from '@/lib/config';
 import { COOKIE, makeToken, isAuthed } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
@@ -9,9 +8,10 @@ export async function GET() {
 }
 
 export async function POST(req) {
+  // Demo mode: any non-empty username and password is accepted.
   const { username, password } = await req.json();
-  if (username !== ADMIN_USER || password !== ADMIN_PASS)
-    return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
+  if (!String(username || '').trim() || !String(password || '').trim())
+    return NextResponse.json({ error: 'Enter a username and password' }, { status: 400 });
   const res = NextResponse.json({ ok: true });
   res.cookies.set(COOKIE, makeToken(), { httpOnly: true, sameSite: 'lax', path: '/', maxAge: 60 * 60 * 12 });
   return res;
