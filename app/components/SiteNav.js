@@ -7,12 +7,14 @@ import { CAFE_NAME } from '@/lib/brand';
 import { haptic } from '@/lib/fx';
 import { CupMark, QrIcon } from './Brand';
 import { ScanButton } from './Scanner';
+import ReadyAlerts from './ReadyAlerts';
+import ServiceButton from './ServiceButton';
 
 // Top bar shared by every customer page. "Scan menu" is always one tap away.
 export default function SiteNav({ links = [] }) {
   const [solid, setSolid] = useState(false);
   const path = usePathname();
-  const { ready, scanned } = useSession();
+  const { ready, scanned, token, phone } = useSession();
   useEffect(() => {
     const on = () => setSolid(window.scrollY > 24);
     on();
@@ -32,6 +34,7 @@ export default function SiteNav({ links = [] }) {
           ))}
         </nav>
         <div className="hidden md:block flex-1" />
+        {token && phone && <ServiceButton token={token} />}
         {ready && !scanned && (
           <ScanButton className="btn btn-primary pulse-ring shrink-0 px-3.5 sm:px-5 py-2.5 text-sm">
             <QrIcon className="w-4 h-4 sm:w-5 sm:h-5" /> <span>Scan menu</span>
@@ -41,6 +44,7 @@ export default function SiteNav({ links = [] }) {
           <Link href="/menu" onClick={() => haptic('tap')} className="btn btn-primary shrink-0 px-4 sm:px-5 py-2.5 text-sm">View menu</Link>
         )}
       </div>
+      {token && phone && <ReadyAlerts token={token} phone={phone} />}
     </header>
   );
 }

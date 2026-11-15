@@ -60,5 +60,40 @@
     "paid": true,
     "paidAt": 1794754832545,
     "billId": "mwhyors1dseu"
+  },
+  {
+    "id": "mwi02o661t0p",
+    "number": 3,
+    "table": "8",
+    "phone": "6565656655",
+    "items": [
+      {
+        "itemId": "i5",
+        "name": "Flat White",
+        "type": "beverage",
+        "size": "M",
+        "qty": 1,
+        "unitPrice": 190,
+        "sugar": "Regular",
+        "milk": "Regular milk",
+        "extraShot": false,
+        "note": ""
+      },
+      {
+        "itemId": "i1",
+        "name": "Espresso",
+        "type": "beverage",
+        "size": "M",
+        "qty": 1,
+        "unitPrice": 110,
+        "sugar": "Regular",
+        "milk": null,
+        "extraShot": false,
+        "note": ""
+      }
+    ],
+    "total": 300,
+    "status": "new",
+    "createdAt": 1794757160670
   }
 ]

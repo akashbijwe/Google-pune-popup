@@ -16,12 +16,15 @@ const SIZE = { S: 'Small', M: 'Medium', L: 'Large' };
 export default function MyOrders({ token, phone, onCount }) {
   const [orders, setOrders] = useState([]);
   const [open, setOpen] = useState(false);
+  const [discount, setDiscount] = useState(0);
 
   const load = useCallback(async () => {
     if (!token || !phone) return;
     try {
       const r = await fetch(`/api/orders/mine?token=${encodeURIComponent(token)}&phone=${encodeURIComponent(phone)}`, { cache: 'no-store' });
       if (r.ok) setOrders(await r.json());
+      const d = await fetch(`/api/discount?token=${encodeURIComponent(token)}&phone=${encodeURIComponent(phone)}`, { cache: 'no-store' });
+      if (d.ok) setDiscount((await d.json()).amount || 0);
     } catch {}
   }, [token, phone]);
 
@@ -29,7 +32,7 @@ export default function MyOrders({ token, phone, onCount }) {
   useEffect(() => { onCount?.(orders.length); }, [orders.length, onCount]);
 
   if (!orders.length) return null;
-  const bill = computeBill(orders);
+  const bill = computeBill(orders, discount);
 
   return (
     <>
@@ -88,6 +91,7 @@ export default function MyOrders({ token, phone, onCount }) {
             <div className="p-6 pt-4 border-t border-latte/40 bg-cream rounded-t-3xl">
               <div className="space-y-1 text-sm text-roast">
                 <div className="flex justify-between"><span>Subtotal</span><span>{CURRENCY}{money(bill.subtotal)}</span></div>
+                {bill.discount > 0 && <div className="flex justify-between text-sage font-semibold"><span>Quiz discount 🎉</span><span>−{CURRENCY}{money(bill.discount)}</span></div>}
                 <div className="flex justify-between"><span>CGST ({bill.rate}%)</span><span>{CURRENCY}{money(bill.cgst)}</span></div>
                 <div className="flex justify-between"><span>SGST ({bill.rate}%)</span><span>{CURRENCY}{money(bill.sgst)}</span></div>
               </div>

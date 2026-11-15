@@ -79,6 +79,7 @@ function Inner() {
 
               <div className="mt-4 pt-3 border-t border-dashed border-latte text-sm space-y-1.5">
                 <div className="flex justify-between"><span>Subtotal</span><span>{CURRENCY}{money(bill.subtotal)}</span></div>
+                {bill.discount > 0 && <div className="flex justify-between text-green-700 font-semibold"><span>Coffee quiz discount</span><span>−{CURRENCY}{money(bill.discount)}</span></div>}
                 <div className="flex justify-between text-roast"><span>CGST ({bill.rate}%)</span><span>{CURRENCY}{money(bill.cgst)}</span></div>
                 <div className="flex justify-between text-roast"><span>SGST ({bill.rate}%)</span><span>{CURRENCY}{money(bill.sgst)}</span></div>
                 <div className="flex justify-between text-xl font-bold pt-2 border-t border-latte"><span>Total paid</span><span>{CURRENCY}{money(bill.total)}</span></div>

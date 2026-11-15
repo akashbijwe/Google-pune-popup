@@ -83,3 +83,16 @@ body { @apply bg-cream text-espresso font-sans antialiased; }
 }
 @media print { .photo-bg { display: none; } }
 .photo-bg.light::after { background: rgba(247,240,230,.92); }
+@keyframes beanFall { from { transform: translateY(-48px) rotate(0); } to { transform: translateY(340px) rotate(360deg); } }
+.bean { position: absolute; top: 0; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; background: none; border: 0; padding: 0; animation: beanFall linear forwards; touch-action: manipulation; user-select: none; }
+@keyframes timer { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+@keyframes bubble { 0% { transform: translateY(0); opacity: 0; } 20% { opacity: .8; } 100% { transform: translateY(-46px); opacity: 0; } }
+.bubble { animation: bubble 2.2s ease-in infinite; }
+@keyframes wave { to { transform: translateX(-60px); } }
+.wave { animation: wave 2.4s linear infinite; }
+@keyframes floatUp { from { opacity: 1; transform: translate(-50%, 0) scale(.8); } to { opacity: 0; transform: translate(-50%, -52px) scale(1.35); } }
+.pop-score { position: absolute; font-weight: 800; font-size: 20px; pointer-events: none; animation: floatUp .7s ease-out forwards; text-shadow: 0 1px 5px rgba(0,0,0,.6); z-index: 5; }
+@keyframes ringOut { from { transform: translate(-50%, -50%) scale(.3); opacity: .95; } to { transform: translate(-50%, -50%) scale(1.9); opacity: 0; } }
+.catch-ring { position: absolute; width: 56px; height: 56px; border-radius: 9999px; border: 3px solid currentColor; pointer-events: none; animation: ringOut .45s ease-out forwards; z-index: 4; }
+@keyframes flash { from { opacity: .55; } to { opacity: 0; } }
+.flash-bad { position: absolute; inset: 0; background: #dc2626; pointer-events: none; animation: flash .35s ease-out forwards; z-index: 6; }

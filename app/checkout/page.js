@@ -136,6 +136,7 @@ export default function Checkout() {
   const router = useRouter();
   const { ready, token, phone } = useSession();
   const [orders, setOrders] = useState(null);
+  const [discount, setDiscount] = useState(0);
   const [step, setStep] = useState('review'); // review | pay | processing | done
   const [msg, setMsg] = useState('');
   const [err, setErr] = useState('');
@@ -149,6 +150,10 @@ export default function Checkout() {
       .then((r) => (r.ok ? r.json() : []))
       .then(setOrders)
       .catch(() => setOrders([]));
+    fetch(`/api/discount?token=${encodeURIComponent(token)}&phone=${encodeURIComponent(phone)}`, { cache: 'no-store' })
+      .then((r) => (r.ok ? r.json() : { amount: 0 }))
+      .then((d) => setDiscount(d.amount || 0))
+      .catch(() => {});
   }, [ready, token, phone]);
 
   async function pay(method, ref) {
@@ -167,7 +172,7 @@ export default function Checkout() {
     }
   }
 
-  const bill = orders ? computeBill(orders) : null;
+  const bill = orders ? computeBill(orders, discount) : null;
 
   return (
     <>
@@ -211,6 +216,7 @@ export default function Checkout() {
             </div>
             <div className="m-6 mt-5 rounded-2xl bg-cream p-4 text-sm space-y-1.5">
               <div className="flex justify-between"><span>Subtotal</span><span>{CURRENCY}{money(bill.subtotal)}</span></div>
+              {bill.discount > 0 && <div className="flex justify-between text-sage font-semibold"><span>Coffee quiz discount 🎉</span><span>−{CURRENCY}{money(bill.discount)}</span></div>}
               <div className="flex justify-between text-roast"><span>CGST ({bill.rate}%)</span><span>{CURRENCY}{money(bill.cgst)}</span></div>
               <div className="flex justify-between text-roast"><span>SGST ({bill.rate}%)</span><span>{CURRENCY}{money(bill.sgst)}</span></div>
               <div className="flex justify-between text-xl font-bold pt-2 border-t border-latte/40"><span>Total</span><span>{CURRENCY}{money(bill.total)}</span></div>

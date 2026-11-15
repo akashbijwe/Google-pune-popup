@@ -142,6 +142,42 @@ function LiveOrders() {
   );
 }
 
+/* ---------------- Guest requests (waiter, water, tissues, bill) ---------------- */
+const REQ = { waiter: ['🛎️', 'Call waiter'], water: ['💧', 'Water'], tissues: ['🧻', 'Tissues'], bill: ['🧾', 'Bring the bill'] };
+
+function Requests({ reqs, reload }) {
+  async function done(id) {
+    haptic('success');
+    await api(`/api/requests/${id}`, json('PATCH', {}));
+    reload();
+  }
+  if (!reqs.length)
+    return <p className="text-roast/60 text-center py-16">No requests right now. Guests' calls appear here instantly.</p>;
+  return (
+    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      {reqs.map((r) => {
+        const [emoji, label] = REQ[r.type] || ['❓', r.type];
+        const mins = Math.floor((Date.now() - r.createdAt) / 60000);
+        return (
+          <div key={r.id} className={`bg-white rounded-2xl border-2 p-4 shadow-sm pop ${mins >= 3 ? 'border-red-400' : 'border-caramel'}`}>
+            <div className="flex items-center gap-3">
+              <span className="text-4xl">{emoji}</span>
+              <div className="flex-1">
+                <div className="text-2xl font-bold">Table {r.table}</div>
+                <div className="font-medium">{label}</div>
+              </div>
+            </div>
+            <div className="mt-3 flex items-center justify-between">
+              <span className={`text-xs ${mins >= 3 ? 'text-red-700 font-semibold' : 'text-roast/60'}`}>{mins < 1 ? 'just now' : `${mins} min ago`}</span>
+              <button onPointerDown={ripple} onClick={() => done(r.id)} className="relative overflow-hidden active:scale-95 transition bg-sage text-white rounded-lg px-4 py-2 text-sm font-medium">Done</button>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 /* ---------------- Menu management ---------------- */
 function MenuManager() {
   const [menu, setMenu] = useState(null);
@@ -298,12 +334,30 @@ function History() {
 }
 
 /* ---------------- Shell ---------------- */
-const TABS = [['orders', 'Live Orders'], ['menu', 'Menu'], ['qr', 'QR Codes'], ['history', 'History']];
+const TABS = [['orders', 'Live Orders'], ['requests', 'Requests'], ['menu', 'Menu'], ['qr', 'QR Codes'], ['history', 'History']];
 
 export default function Admin() {
   const [authed, setAuthed] = useState(null);
   const [tab, setTab] = useState('orders');
   useEffect(() => { api('/api/auth').then((r) => setAuthed(r.ok)); }, []);
+
+  // Guest requests are polled here so staff hear/see them from any tab.
+  const [reqs, setReqs] = useState([]);
+  const seenReq = useRef(null);
+  const loadReqs = useCallback(async () => {
+    const r = await api('/api/requests', { cache: 'no-store' });
+    if (!r.ok) return;
+    const data = await r.json();
+    if (seenReq.current && data.some((x) => !seenReq.current.has(x.id))) { beep(); haptic('success'); }
+    seenReq.current = new Set(data.map((x) => x.id));
+    setReqs(data);
+  }, []);
+  useEffect(() => {
+    if (!authed) return;
+    loadReqs();
+    const t = setInterval(loadReqs, 4000);
+    return () => clearInterval(t);
+  }, [authed, loadReqs]);
   if (authed === null) return null;
   if (!authed) return <Login onDone={() => setAuthed(true)} />;
   return (
@@ -315,7 +369,7 @@ export default function Admin() {
           <nav className="flex gap-1 flex-1 overflow-x-auto">
             {TABS.map(([k, label]) => (
               <button key={k} onClick={() => { haptic('select'); setTab(k); }}
-                className={`px-3 py-1.5 rounded-lg text-sm whitespace-nowrap transition active:scale-95 ${tab === k ? 'bg-foam text-espresso' : 'text-foam/80 hover:bg-foam/10'}`}>{label}</button>
+                className={`px-3 py-1.5 rounded-lg text-sm whitespace-nowrap transition active:scale-95 ${tab === k ? 'bg-foam text-espresso' : 'text-foam/80 hover:bg-foam/10'}`}>{label}{k === 'requests' && reqs.length > 0 && <span className="ml-1.5 inline-flex items-center justify-center min-w-5 h-5 px-1 rounded-full bg-caramel text-foam text-xs font-bold animate-pulse">{reqs.length}</span>}</button>
             ))}
           </nav>
           <button onClick={async () => { await api('/api/auth', { method: 'DELETE' }); setAuthed(false); }} className="text-sm text-foam/70 hover:text-foam">Sign out</button>
@@ -323,6 +377,7 @@ export default function Admin() {
       </header>
       <main key={tab} className="max-w-6xl mx-auto p-4 md:p-6 rise">
         {tab === 'orders' && <LiveOrders />}
+        {tab === 'requests' && <Requests reqs={reqs} reload={loadReqs} />}
         {tab === 'menu' && <MenuManager />}
         {tab === 'qr' && <QRCodes />}
         {tab === 'history' && <History />}

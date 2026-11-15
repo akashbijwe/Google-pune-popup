@@ -1,5 +1,6 @@
 'use client';
-import { Suspense, useEffect, useMemo, useState } from 'react';
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { CAFE_NAME, OUTLET, CURRENCY } from '@/lib/brand';
 import { haptic, ripple, burstConfetti } from '@/lib/fx';
@@ -163,6 +164,15 @@ function MenuInner() {
   const [toast, setToast] = useState('');
   const [bumpKey, setBumpKey] = useState(0);
   const [orderCount, setOrderCount] = useState(0);
+  const pickedRef = useRef(false);
+
+  // /menu?pick=<itemId> (from the coffee quiz) opens that drink straight away
+  useEffect(() => {
+    const pick = params.get('pick');
+    if (!menu || !pick || pickedRef.current) return;
+    const it = menu.items.find((i) => i.id === pick && i.available);
+    if (it) { pickedRef.current = true; setCustom(it); }
+  }, [menu, params]);
 
   useEffect(() => {
     fetch('/api/menu').then((r) => r.json()).then((m) => { setMenu(m); setCat(m.categories[0]); });
@@ -280,6 +290,14 @@ function MenuInner() {
             </div>
           </div>
         )}
+
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 mt-4">
+          <Link href="/quiz" onClick={() => haptic('tap')} className="group flex items-center gap-3 rounded-2xl bg-foam border border-latte/40 px-4 py-3 hover:shadow-md transition">
+            <span className="text-2xl float">🎯</span>
+            <span className="flex-1 text-sm"><b>Not sure what to order?</b> <span className="text-roast/80">Take the 3-tap coffee personality quiz.</span></span>
+            <span className="text-caramel font-semibold transition-transform group-hover:translate-x-1">→</span>
+          </Link>
+        </div>
 
         <nav className="sticky top-16 z-30 mt-4 bg-cream/90 backdrop-blur border-b border-latte/30">
           <div className="max-w-5xl mx-auto flex gap-2 overflow-x-auto px-4 py-3 no-scrollbar">

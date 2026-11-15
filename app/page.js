@@ -71,7 +71,7 @@ export default function Home() {
   return (
     <>
       <PhotoBg src="/img/tw-2.jpg" mobileSrc="/img/tw-10.jpg" pos="center 70%" soft />
-      <SiteNav links={[['#story', 'Our story'], ['#gallery', 'Gallery'], ['#how', 'How it works'], ['#visit', 'Visit us']]} />
+      <SiteNav links={[['#story', 'Our story'], ['/quiz', 'Coffee quiz'], ['#gallery', 'Gallery'], ['#how', 'How it works'], ['#visit', 'Visit us']]} />
 
       <main className="text-foam">
         {/* ---------- Hero ---------- */}
@@ -119,6 +119,21 @@ export default function Home() {
                   </div>
                 </article>
               ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ---------- Quiz promo ---------- */}
+        <section id="quiz" className="px-5 sm:px-6 py-16 sm:py-24 bg-espresso/90">
+          <div className="max-w-6xl mx-auto grid gap-8 md:grid-cols-2 items-center">
+            <div className="reveal">
+              <p className="text-latte tracking-[.3em] text-xs uppercase font-semibold">Three taps</p>
+              <h2 className="font-display font-bold text-4xl sm:text-5xl mt-3">What's your coffee personality?</h2>
+              <p className="mt-4 text-foam/80 text-lg">Rainy or sunny? Sweet or bitter? Work or chill? Find the drink that fits you and share your card.</p>
+              <Link href="/quiz" onPointerDown={ripple} onClick={() => haptic('tap')} className="btn btn-primary mt-7 px-7 py-4 text-lg">Take the quiz →</Link>
+            </div>
+            <div className="reveal rounded-3xl overflow-hidden border border-foam/15 shadow-2xl" style={{ '--d': '150ms' }}>
+              <img src="/img/tw-11.jpg" alt="Layered iced coffee" loading="lazy" className="w-full aspect-[4/3] object-cover" />
             </div>
           </div>
         </section>
