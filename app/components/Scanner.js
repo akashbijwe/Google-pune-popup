@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useSession } from '@/lib/session';
 import jsQR from 'jsqr';
+import QRCode from 'qrcode';
 import { haptic, ripple } from '@/lib/fx';
 import { QrIcon } from './Brand';
 import Portal from './Portal';
@@ -26,6 +27,7 @@ export function Scanner({ onClose }) {
   const [msg, setMsg] = useState('');
   const [shake, setShake] = useState(0);
   const [manual, setManual] = useState('');
+  const [samples, setSamples] = useState(null); // demo-only sample table codes
   const busy = useRef(false);
   const alive = useRef(true);
 
@@ -45,6 +47,24 @@ export function Scanner({ onClose }) {
       setTimeout(() => { busy.current = false; setMsg(''); }, 1800);
     }
   }
+
+  // Demo/test site only: the API returns nothing when DEMO_SAMPLE_QR=off
+  useEffect(() => {
+    let live = true;
+    (async () => {
+      try {
+        const r = await fetch('/api/sample-qr', { cache: 'no-store' });
+        const d = r.ok ? await r.json() : null;
+        if (!d?.enabled) return;
+        const list = await Promise.all(d.samples.map(async (x) => ({
+          ...x,
+          img: await QRCode.toDataURL(`${window.location.origin}/menu?table=${x.token}`, { width: 160, margin: 1, color: { dark: '#2E1F17' } }),
+        })));
+        if (live) setSamples(list);
+      } catch {}
+    })();
+    return () => { live = false; };
+  }, []);
 
   useEffect(() => {
     alive.current = true;
@@ -128,6 +148,25 @@ export function Scanner({ onClose }) {
         />
         <button className="btn btn-primary px-5" onPointerDown={ripple}>Go</button>
       </form>
+
+      {samples && (
+        <div className="mt-6 w-full max-w-sm rounded-2xl border-2 border-dashed border-amber-400/70 bg-amber-300/10 p-4">
+          <div className="text-amber-200 font-semibold text-sm">🧪 Demo only: sample table QR codes</div>
+          <p className="text-xs text-foam/75 mt-1">Tap a table to jump straight in, or scan one from another phone.</p>
+          <div className="mt-3 grid grid-cols-3 gap-2">
+            {samples.map((x) => (
+              <button key={x.table} type="button" onPointerDown={ripple} onClick={() => { haptic('select'); accept(x.token); }}
+                className="relative overflow-hidden rounded-xl bg-foam p-2 text-espresso text-center transition active:scale-95 hover:-translate-y-0.5">
+                <img src={x.img} alt={`Sample QR for table ${x.table}`} className="w-full rounded-md" />
+                <span className="block mt-1 text-xs font-bold">Table {x.table}</span>
+              </button>
+            ))}
+          </div>
+          <p className="mt-3 text-[11px] leading-snug text-amber-100/80">
+            <b>Note:</b> these sample codes are shown only because this is a <b>test site</b>. They will not be available on the actual site.
+          </p>
+        </div>
+      )}
       </div>
     </div>
   );
