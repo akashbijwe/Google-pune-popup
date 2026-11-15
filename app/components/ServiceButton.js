@@ -1,6 +1,7 @@
 'use client';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { haptic, ripple } from '@/lib/fx';
+import Portal from './Portal';
 
 export const SERVICES = [
   ['waiter', '🛎️', 'Call waiter', 'We will come to your table'],
@@ -67,6 +68,7 @@ export default function ServiceButton({ token }) {
         {pending.length > 0 && <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-caramel border-2 border-espresso animate-pulse" />}
       </button>
 
+      <Portal>
       {toast && <div className="toast fixed top-20 left-1/2 z-[80] bg-sage text-foam rounded-full px-5 py-2.5 text-sm font-semibold shadow-2xl whitespace-nowrap" role="status">{toast}</div>}
 
       {open && (
@@ -98,6 +100,7 @@ export default function ServiceButton({ token }) {
           </div>
         </div>
       )}
+      </Portal>
     </>
   );
 }

@@ -6,6 +6,7 @@ import { useSession } from '@/lib/session';
 import jsQR from 'jsqr';
 import { haptic, ripple } from '@/lib/fx';
 import { QrIcon } from './Brand';
+import Portal from './Portal';
 
 // Accepts a full scanned URL (…/menu?table=<code>) or a bare code.
 function extractToken(text) {
@@ -145,7 +146,7 @@ export function ScanButton({ className = '', children, scannedLabel = 'View menu
       <button className={className} onPointerDown={ripple} onClick={() => { haptic('tap'); setOpen(true); }}>
         {children}
       </button>
-      {open && <Scanner onClose={() => setOpen(false)} />}
+      {open && <Portal><Scanner onClose={() => setOpen(false)} /></Portal>}
     </>
   );
 }

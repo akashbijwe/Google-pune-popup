@@ -79,7 +79,7 @@ export default function Quiz() {
               <div className="absolute -right-16 -top-16 w-56 h-56 rounded-full bg-caramel/30 blur-2xl" />
               <p className="relative text-latte tracking-[.25em] text-[11px] uppercase font-semibold">Third Wave Coffee</p>
               <p className="relative mt-6 text-foam/80 text-sm tracking-widest">YOU'RE A</p>
-              <div className="relative text-8xl my-2 float">{result.emoji}</div>
+              <div className="relative text-8xl my-4 py-2 leading-[1.15] float">{result.emoji}</div>
               <h2 className="relative font-display font-extrabold text-4xl">{result.drink}</h2>
               <p className="relative mt-2 text-latte font-bold text-lg">{result.persona}</p>
               <p className="relative mt-1 text-foam/80">{result.line}</p>

@@ -10,6 +10,8 @@ WORKDIR /app
 ENV NODE_ENV=production PORT=8080 HOSTNAME=0.0.0.0 DATA_DIR=/tmp/data
 COPY --from=build /app/.next/standalone ./
 COPY --from=build /app/.next/static ./.next/static
+# Next.js standalone output does not include public/, so copy it or every /img/... photo 404s
+COPY --from=build /app/public ./public
 COPY --from=build /app/data ./data
 EXPOSE 8080
 CMD ["node", "server.js"]

@@ -61,12 +61,6 @@ function Rating() {
 
 export default function Home() {
   useReveal();
-  const hero = useRef(null);
-  useEffect(() => {
-    const on = () => { if (hero.current) hero.current.style.transform = `translateY(${Math.min(window.scrollY, 600) * 0.25}px)`; };
-    window.addEventListener('scroll', on, { passive: true });
-    return () => window.removeEventListener('scroll', on);
-  }, []);
 
   return (
     <>
@@ -75,8 +69,9 @@ export default function Home() {
 
       <main className="text-foam">
         {/* ---------- Hero ---------- */}
-        <section className="min-h-[100svh] flex items-start sm:items-center px-5 sm:px-6 pt-24 sm:pt-20">
-          <div ref={hero} className="max-w-6xl mx-auto w-full">
+        <section className="relative min-h-[100svh] flex items-start sm:items-center px-5 sm:px-6 pt-24 sm:pt-20">
+          <div className="hidden sm:block absolute inset-0 bg-gradient-to-r from-espresso/85 via-espresso/50 to-transparent pointer-events-none" />
+          <div className="relative max-w-6xl mx-auto w-full">
             <div className="rise" style={{ '--d': '100ms' }}><OpenNow /></div>
             <p className="rise mt-4 text-latte tracking-[.3em] text-xs sm:text-sm uppercase font-semibold" style={{ '--d': '200ms' }}>{OUTLET} · Pune</p>
             <h1 className="rise font-display font-bold text-5xl sm:text-7xl lg:text-8xl leading-[1.02] mt-3 max-w-3xl drop-shadow-lg" style={{ '--d': '300ms' }}>

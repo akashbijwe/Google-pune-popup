@@ -83,7 +83,10 @@ export default function OrderTracker({ token, phone, number }) {
           ) : (
             <div className="font-display font-bold text-2xl">Order #{String(order.number).padStart(3, '0')}</div>
           )}
-          <ol className="mt-4 flex items-start">
+        </div>
+      </div>
+      <div className="px-6 pb-6 -mt-1">
+          <ol className="flex items-start">
             {STAGES.map((s, i) => (
               <li key={s} className="flex-1 flex flex-col items-center relative">
                 {i > 0 && <span className={`absolute right-1/2 top-2.5 h-0.5 w-full transition-colors duration-700 ${i <= stage ? 'bg-caramel' : 'bg-latte/40'}`} />}
@@ -94,7 +97,6 @@ export default function OrderTracker({ token, phone, number }) {
               </li>
             ))}
           </ol>
-        </div>
       </div>
     </section>
   );

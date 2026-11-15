@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import { haptic } from '@/lib/fx';
+import Portal from './Portal';
 
 function chime() {
   try {
@@ -47,8 +48,10 @@ export default function ReadyAlerts({ token, phone }) {
 
   if (!msg) return null;
   return (
-    <button onClick={() => setMsg('')} className="toast fixed top-20 left-1/2 z-[80] bg-sage text-foam rounded-full px-6 py-3 font-semibold shadow-2xl print:hidden whitespace-nowrap" role="status">
-      {msg} <span className="opacity-70 text-sm ml-1">Coming to your table</span>
+    <Portal>
+    <button onClick={() => setMsg('')} className="toast fixed top-20 left-1/2 z-[80] w-[92vw] max-w-md bg-sage text-foam rounded-2xl px-5 py-3 text-center font-semibold shadow-2xl print:hidden" role="status">
+      {msg} <span className="block opacity-80 text-sm font-normal">Coming to your table</span>
     </button>
+    </Portal>
   );
 }
